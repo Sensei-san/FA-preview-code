@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Photo Capture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* Entry Screen */
+        .entry-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .secondary-btn {
+            background: #f0f0f0;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .secondary-btn:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        /* Capture Screen */
+        .capture-screen {
+            display: none;
+        }
+
+        .progress-bar {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .pose-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .pose-number {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .pose-instruction {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .pose-description {
+            font-size: 14px;
+            color: #666;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            border-radius: 8px;
+            background: #000;
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        .preview {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .preview img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .button-group button {
+            margin: 0;
+        }
+
+        .single-button {
+            margin-bottom: 10px;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .employee-summary {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .employee-summary p {
+            margin: 5px 0;
+            color: #333;
+        }
+
+        .summary-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .summary-id {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .photos-taken {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+
+        .pose-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+
+        .pose-item {
+            padding: 10px;
+            border-radius: 5px;
+            background: #f9f9f9;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .pose-item.completed {
+            background: #d4edda;
+            color: #155724;
+            font-weight: 600;
+        }
+
+        .pose-item.current {
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+            border: 2px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📸 Employee Photo Capture System</h1>
+            <p class="subtitle">Capture 6 different poses for dataset creation</p>
+        </header>
+
+        <!-- Entry Screen -->
+        <div class="card entry-screen" id="entry-screen">
+            <h2>Welcome! Let's Get Started</h2>
+            
+            <div class="message" id="entry-message"></div>
+
+            <div class="form-group">
+                <label for="employee-name">Full Name:</label>
+                <input type="text" id="employee-name" placeholder="e.g., John Smith" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label for="employee-id">Employee ID:</label>
+                <input type="text" id="employee-id" placeholder="e.g., EMP001" autocomplete="off">
+            </div>
+
+            <button id="start-btn">Continue to Photo Capture →</button>
+        </div>
+
+        <!-- Capture Screen -->
+        <div class="card capture-screen" id="capture-screen">
+            <h2>Take Your Photos</h2>
+
+            <div class="employee-summary" id="employee-summary"></div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <div class="message" id="capture-message"></div>
+
+            <div class="pose-info" id="pose-info">
+                <div class="pose-number">POSE <span id="current-pose-num">1</span> OF 6</div>
+                <div class="pose-instruction" id="pose-instruction">Look straight at camera</div>
+                <div class="pose-description" id="pose-description">Keep a neutral expression</div>
+            </div>
+
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" width="640" height="480"></canvas>
+
+            <div class="button-group">
+                <button id="capture-btn">📷 Capture</button>
+                <button id="retake-btn" class="secondary-btn hidden">↻ Retake</button>
+            </div>
+
+            <div class="preview hidden" id="preview">
+                <p style="color: #666; font-size: 13px; text-align: center;">Preview:</p>
+                <img id="preview-img" src="" alt="Preview">
+            </div>
+
+            <button id="save-btn" class="hidden">✓ Save & Next</button>
+
+            <div class="pose-list" id="pose-list"></div>
+
+            <div class="photos-taken hidden" id="photos-taken">✓ All 6 photos captured!</div>
+
+            <div class="button-group" id="final-buttons" style="display: none;">
+                <button id="upload-btn">☁️ Upload to Google Drive</button>
+                <button id="done-btn" class="secondary-btn">← Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const POSES = [
+            { id: 'neutral', instruction: 'Look straight at camera', description: 'Keep a neutral expression' },
+            { id: 'smile', instruction: 'Look straight at camera', description: 'Smile naturally' },
+            { id: 'left30', instruction: 'Look left 30 degrees', description: 'Turn your head to the left' },
+            { id: 'right30', instruction: 'Look right 30 degrees', description: 'Turn your head to the right' },
+            { id: 'up', instruction: 'Look up', description: 'Tilt your head upward' },
+            { id: 'down', instruction: 'Look down', description: 'Tilt your head downward' }
+        ];
+
+        // State
+        let employeeName = '';
+        let employeeId = '';
+        let currentPoseIndex = 0;
+        let photos = {};
+        let currentPhoto = null;
+        let gdrive_authenticated = false;
+
+        // Elements
+        const entryScreen = document.getElementById('entry-screen');
+        const captureScreen = document.getElementById('capture-screen');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const startBtn = document.getElementById('start-btn');
+        const captureBtn = document.getElementById('capture-btn');
+        const retakeBtn = document.getElementById('retake-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const uploadBtn = document.getElementById('upload-btn');
+        const doneBtn = document.getElementById('done-btn');
+        const preview = document.getElementById('preview');
+        const previewImg = document.getElementById('preview-img');
+        const entryMessage = document.getElementById('entry-message');
+        const captureMessage = document.getElementById('capture-message');
+        const poseInfo = document.getElementById('pose-info');
+        const poseInstruction = document.getElementById('pose-instruction');
+        const poseDescription = document.getElementById('pose-description');
+        const currentPoseNum = document.getElementById('current-pose-num');
+        const progressFill = document.getElementById('progress-fill');
+        const poseList = document.getElementById('pose-list');
+        const photosTaken = document.getElementById('photos-taken');
+        const employeeSummary = document.getElementById('employee-summary');
+        const finalButtons = document.getElementById('final-buttons');
+
+        // Initialize camera
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+                });
+                video.srcObject = stream;
+            } catch (error) {
+                showMessage('capture-message', `Camera error: ${error.message}`, 'error');
+                console.error('Camera error:', error);
+            }
+        }
+
+        // Show message
+        function showMessage(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `message ${type}`;
+        }
+
+        // Render pose list
+        function renderPoseList() {
+            poseList.innerHTML = POSES.map((pose, idx) => {
+                let className = 'pose-item';
+                if (photos[pose.id]) {
+                    className += ' completed';
+                    return `<div class="${className}">✓ ${pose.instruction}</div>`;
+                } else if (idx === currentPoseIndex) {
+                    className += ' current';
+                    return `<div class="${className}">→ ${pose.instruction}</div>`;
+                }
+                return `<div class="${className}">${pose.instruction}</div>`;
+            }).join('');
+        }
+
+        // Start capture session
+        startBtn.addEventListener('click', () => {
+            const name = document.getElementById('employee-name').value.trim();
+            const id = document.getElementById('employee-id').value.trim();
+
+            if (!name) {
+                showMessage('entry-message', 'Please enter your full name', 'error');
+                return;
+            }
+
+            if (!id) {
+                showMessage('entry-message', 'Please enter your employee ID', 'error');
+                return;
+            }
+
+            employeeName = name;
+            employeeId = id;
+            currentPoseIndex = 0;
+            photos = {};
+
+            // Show capture screen
+            entryScreen.style.display = 'none';
+            captureScreen.style.display = 'block';
+
+            // Update summary
+            employeeSummary.innerHTML = `
+                <p class="summary-name">${employeeName}</p>
+                <p class="summary-id">ID: ${employeeId}</p>
+            `;
+
+            // Initialize camera and UI
+            initCamera();
+            updatePoseUI();
+            renderPoseList();
+        });
+
+        // Update pose UI
+        function updatePoseUI() {
+            const pose = POSES[currentPoseIndex];
+            currentPoseNum.textContent = currentPoseIndex + 1;
+            poseInstruction.textContent = pose.instruction;
+            poseDescription.textContent = pose.description;
+            progressFill.style.width = ((currentPoseIndex / 6) * 100) + '%';
+        }
+
+        // Capture photo
+        captureBtn.addEventListener('click', () => {
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            currentPhoto = canvas.toDataURL('image/jpeg');
+            previewImg.src = currentPhoto;
+            preview.classList.remove('hidden');
+            captureBtn.classList.add('hidden');
+            retakeBtn.classList.remove('hidden');
+            saveBtn.classList.remove('hidden');
+        });
+
+        // Retake photo
+        retakeBtn.addEventListener('click', () => {
+            currentPhoto = null;
+            preview.classList.add('hidden');
+            captureBtn.classList.remove('hidden');
+            retakeBtn.classList.add('hidden');
+            saveBtn.classList.add('hidden');
+        });
+
+        // Save photo and move to next pose
+        saveBtn.addEventListener('click', async () => {
+            const pose = POSES[currentPoseIndex];
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="loader"></span> Saving...';
+
+            try {
+                const response = await fetch('/api/upload-photo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        employee_name: employeeName,
+                        employee_id: employeeId,
+                        photo: currentPhoto,
+                        pose: pose.id
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    photos[pose.id] = true;
+                    currentPhoto = null;
+                    preview.classList.add('hidden');
+
+                    if (currentPoseIndex < POSES.length - 1) {
+                        currentPoseIndex++;
+                        updatePoseUI();
+                        renderPoseList();
+                        captureBtn.classList.remove('hidden');
+                        retakeBtn.classList.add('hidden');
+                        saveBtn.classList.add('hidden');
+                        showMessage('capture-message', '✓ Photo saved! Ready for next pose.', 'success');
+                    } else {
+                        // All photos captured
+                        photosTaken.classList.remove('hidden');
+                        captureBtn.classList.add('hidden');
+                        retakeBtn.classList.add('hidden');
+                        saveBtn.classList.add('hidden');
+                        video.style.display = 'none';
+                        finalButtons.style.display = 'grid';
+                        showMessage('capture-message', '✓ All photos captured! Ready to upload.', 'success');
+                    }
+                } else {
+                    showMessage('capture-message', `Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage('capture-message', `Error: ${error.message}`, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '✓ Save & Next';
+            }
+        });
+
+        // Upload to Google Drive
+        uploadBtn.addEventListener('click', async () => {
+            if (!gdrive_authenticated) {
+                showMessage('capture-message', 'Connecting to Google Drive...', 'info');
+                
+                // First authenticate
+                try {
+                    const authResponse = await fetch('/api/authenticate-gdrive', { method: 'POST' });
+                    const authData = await authResponse.json();
+                    
+                    if (!authData.success) {
+                        showMessage('capture-message', `Auth error: ${authData.error}`, 'error');
+                        return;
+                    }
+                    gdrive_authenticated = true;
+                } catch (error) {
+                    showMessage('capture-message', `Auth error: ${error.message}`, 'error');
+                    return;
+                }
+            }
+
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '<span class="loader"></span> Uploading...';
+
+            try {
+                const response = await fetch('/api/upload-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        employee_name: employeeName,
+                        employee_id: employeeId
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showMessage('capture-message', `✓ ${data.message}`, 'success');
+                } else {
+                    showMessage('capture-message', `Upload error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage('capture-message', `Error: ${error.message}`, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '☁️ Upload to Google Drive';
+            }
+        });
+
+        // Start over
+        doneBtn.addEventListener('click', () => {
+            // Reset everything
+            document.getElementById('employee-name').value = '';
+            document.getElementById('employee-id').value = '';
+            entryScreen.style.display = 'flex';
+            captureScreen.style.display = 'none';
+            currentPhoto = null;
+            photos = {};
+            currentPoseIndex = 0;
+            video.style.display = 'block';
+            photosTaken.classList.add('hidden');
+            finalButtons.style.display = 'none';
+            entryMessage.className = 'message';
+            captureMessage.className = 'message';
+        });
+    </script>
+</body>
+</html>
